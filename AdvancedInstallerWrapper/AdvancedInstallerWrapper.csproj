@@ -4,6 +4,10 @@
     <TargetFrameworks>netstandard1.3;net451;net46</TargetFrameworks>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)'=='netstandard1.3'">
+    <DefineConstants>FEATURE_TYPE_INFO</DefineConstants>
+  </PropertyGroup>
+  
   <ItemGroup Condition="'$(TargetFramework)'=='net451' OR '$(TargetFramework)'=='net46'">
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -15,8 +19,15 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Folder Include="Utils\" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+    <PackageReference Include="System.Diagnostics.Process">
+      <Version>4.3.0</Version>
+    </PackageReference>
   </ItemGroup>
-
+  
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard1.3'">
+    <PackageReference Include="System.Diagnostics.Process">
+      <Version>4.3.0</Version>
+    </PackageReference>
+  </ItemGroup>
 </Project>
