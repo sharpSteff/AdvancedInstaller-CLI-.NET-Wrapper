@@ -54,6 +54,12 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AdvancedInstallerWrapper\AdvancedInstallerWrapper.csproj">
+      <Project>{e7c6cb04-2f59-446d-877d-8d4c04232a46}</Project>
+      <Name>AdvancedInstallerWrapper</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

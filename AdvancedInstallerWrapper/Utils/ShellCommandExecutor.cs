@@ -1,37 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace AdvancedInstallerWrapper.Utils
 {
     public static class ShellCommandExecutor
     {
-        public static string ExecuteSynchronous(string workingDirectory, string arguments)
+        public static int ExecuteSynchronous(string arguments)
         {
-            Process process = new Process();
-            ProcessStartInfo startInfo = new ProcessStartInfo();
+            using (Process process = new Process())
+            {
 
 #if !FEATURE_TYPE_INFO
-            startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+                process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 #endif
-            startInfo.WorkingDirectory = workingDirectory;
-            startInfo.FileName = @"C:\Windows\System32\cmd.exe";
-            startInfo.Arguments = "/c" + arguments;
-            startInfo.UseShellExecute = false;
-            startInfo.RedirectStandardError = true;
-            startInfo.RedirectStandardOutput = true;
+                process.StartInfo.FileName = "cmd.exe";
+                process.StartInfo.Arguments = string.Format("{0} \"{1}\"", "/c", arguments);
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.RedirectStandardError = true;
+                process.StartInfo.RedirectStandardOutput = true;
 
-            process.StartInfo = startInfo;
-            process.Start();
+                process.Start();
 
-            string output = process.StandardOutput.ReadToEnd();
-            Console.WriteLine(output);
-            string err = process.StandardError.ReadToEnd();
-            Console.WriteLine(err);
-            process.WaitForExit();
-
-            return string.IsNullOrWhiteSpace(err) ? output : err;
+                string output = process.StandardOutput.ReadToEnd();
+                Console.WriteLine(output);
+                string err = process.StandardError.ReadToEnd();
+                Console.WriteLine(err);
+                process.WaitForExit();
+                return process.ExitCode;
+            }
         }
     }
 }

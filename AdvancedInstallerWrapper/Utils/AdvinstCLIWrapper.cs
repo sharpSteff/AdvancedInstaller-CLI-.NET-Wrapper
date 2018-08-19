@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace AdvancedInstallerWrapper.Utils
 {
@@ -8,13 +9,15 @@ namespace AdvancedInstallerWrapper.Utils
 
         public static bool CreateNewProject(string path, string projectFilePath, ProjectType type, ProjectLanguage lang, bool overwrite)
         {
-            var result = ShellCommandExecutor.ExecuteSynchronous(path,
-                ComName +
-                "/newproject" +
-                projectFilePath +
-                (type == ProjectType.simple ? "" : " -type " + type.ToString()) +
-                " -lang " + lang.ToString() +
-                (overwrite ? " -overwrite" : ""));
+            string command = string.Format("\"{0}\" {1} \"{2}\" {3} {4} {5}",
+               Path.Combine(path, ComName),
+               "/newproject",
+               projectFilePath,
+                (type == ProjectType.simple ? "" : " -type " + type.ToString()),
+               " -lang " + lang.ToString(),
+               (overwrite ? " -overwrite" : ""));
+
+            var result = ShellCommandExecutor.ExecuteSynchronous(command);
 
             return CheckForError(result);   
         }
@@ -22,8 +25,8 @@ namespace AdvancedInstallerWrapper.Utils
         // TODO: Add buildslist and configurationlist 
         public static bool BuildProject(string path, string projectFilePath, bool rebuild = false)
         {
-            var result = ShellCommandExecutor.ExecuteSynchronous(path,
-                ComName +
+            var result = ShellCommandExecutor.ExecuteSynchronous(
+                Path.Combine(path, ComName) +
                 (rebuild ? "/rebuild" : "/build") +
                 projectFilePath);
 
@@ -32,8 +35,8 @@ namespace AdvancedInstallerWrapper.Utils
 
         public static bool RefreshSynchronizedFolders(string path, string projectFilePath)
         {
-            var result = ShellCommandExecutor.ExecuteSynchronous(path,
-               ComName +
+            var result = ShellCommandExecutor.ExecuteSynchronous(
+               Path.Combine(path, ComName) +
                "/RefreshSync" +
                projectFilePath);
 
@@ -51,8 +54,8 @@ namespace AdvancedInstallerWrapper.Utils
         /// <returns></returns>
         public static bool ChangePackageOutputType(string path, string projectFilePath, PackageType packageType, string buildName = "", string msiUrl = "")
         {
-            string command = string.Format("{0} {1} \"{2}\" {3} {4} {5} {6}", 
-                ComName, 
+            string command = string.Format("{0} {1} \"{2}\" {3} {4} {5} {6}",
+                Path.Combine(path, ComName), 
                 "/edit", 
                 projectFilePath, 
                 "/SetOutputType", 
@@ -60,14 +63,25 @@ namespace AdvancedInstallerWrapper.Utils
                 string.IsNullOrWhiteSpace(buildName) ? "" : "-buildname " + buildName,
                 (packageType == PackageType.WebInstaller) ? "-msi_url " + "\""+ msiUrl +"\"" : "");
 
-            var result = ShellCommandExecutor.ExecuteSynchronous(path, command);
+            var result = ShellCommandExecutor.ExecuteSynchronous(command);
 
             return CheckForError(result);
         }
 
-        private static bool CheckForError(string result)
+        private static bool CheckForError(int errorCode)
         {
-            throw new NotImplementedException();
+            if (errorCode == 0)
+            {
+                return true;
+            }
+
+            uint code = errorCode < 0 ?  (uint)(uint.MaxValue - Math.Abs(errorCode) + 1) : (uint)errorCode;
+            if (AdvinstErrorCodes.ErrorCodes.ContainsKey(code))
+            {
+                Console.Write(AdvinstErrorCodes.ErrorCodes[code]);
+            }
+
+            return false;
         }
     }
 }
